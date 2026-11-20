@@ -1,0 +1,8 @@
+# Java projects to watch. One OWNER/REPO per line.
+apache/cloudstack
+hiero-ledger/hiero-sdk-java
+keycloak/keycloak
+spring-projects/spring-boot
+checkstyle/checkstyle
+OpenAPITools/openapi-generator
+apache/dolphinscheduler

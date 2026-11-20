@@ -1,0 +1,36 @@
+# Copy to .github/workflows/ in your own repository: every Monday it opens an issue listing
+# unclaimed issues in the projects you care about.
+name: Weekly contribution digest
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The cache makes later runs answer mostly with "304 Not Modified", which costs no API quota.
+      - uses: actions/cache@v4
+        with:
+          path: .merge-radar-cache.db
+          key: merge-radar-${{ github.run_id }}
+          restore-keys: merge-radar-
+      - uses: stag7824/merge-radar@v0
+        with:
+          repos: |
+            apache/cloudstack
+            apache/datafusion-ballista
+            hiero-ledger/hiero-sdk-java
+          recent: 30d
+          outsider_reports: true
+      - name: Open the digest as an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "Contribution digest $(date +%F)" --body-file merge-radar.md

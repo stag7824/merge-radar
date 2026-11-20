@@ -1,0 +1,55 @@
+name: merge-radar
+description: Find open source issues you can actually fix and get merged.
+author: stag7824
+branding:
+  icon: git-pull-request
+  color: purple
+
+# Input names use underscores: Docker actions receive them as INPUT_<NAME> variables, and a
+# hyphen there would make the variable unreadable from bash.
+inputs:
+  command:
+    description: "'issues' (default) or 'health'."
+    default: issues
+  repos:
+    description: Repositories as OWNER/REPO, separated by spaces, commas or newlines.
+    default: ""
+  repos_file:
+    description: Path to a file with one OWNER/REPO per line.
+    default: ""
+  labels:
+    description: Only issues with any of these labels, separated by commas or newlines.
+    default: ""
+  recent:
+    description: Only issues opened within this long, for example 30d.
+    default: ""
+  outsider_reports:
+    description: Only issues reported by people who are not maintainers.
+    default: "false"
+  per_repo:
+    description: How many of the newest matching issues to check per repository.
+    default: "30"
+  window:
+    description: How far back to measure repository health.
+    default: 30d
+  format:
+    description: markdown, json or table.
+    default: markdown
+  output:
+    description: File to write the report to.
+    default: merge-radar.md
+  cache_file:
+    description: Response cache. Keep it with actions/cache so later runs cost almost no API calls.
+    default: .merge-radar-cache.db
+  token:
+    description: GitHub token used to read the repositories.
+    default: ${{ github.token }}
+
+outputs:
+  report:
+    description: Path of the written report.
+
+runs:
+  using: docker
+  image: Dockerfile
+  entrypoint: /opt/merge-radar/entrypoint.sh

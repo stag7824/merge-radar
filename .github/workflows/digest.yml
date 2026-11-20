@@ -1,0 +1,27 @@
+# merge-radar running on itself: a weekly digest of Java projects, shown in the job summary.
+name: Digest
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: .merge-radar-cache.db
+          key: merge-radar-${{ github.run_id }}
+          restore-keys: merge-radar-
+      - uses: ./
+        with:
+          repos_file: examples/java-repos.txt
+          recent: 30d
+          outsider_reports: true
+          per_repo: '20'

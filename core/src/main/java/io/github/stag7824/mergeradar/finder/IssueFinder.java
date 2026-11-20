@@ -13,6 +13,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -79,7 +80,7 @@ public final class IssueFinder {
       });
     }
     repos.sort(Comparator.comparingInt(RepoHealth::score).reversed());
-    return new Report(clock.instant(), repos, List.of(), errors, github.rateLimit());
+    return new Report(now(), repos, List.of(), errors, github.rateLimit());
   }
 
   /** Scores repositories, then finds and ranks issues in them. */
@@ -87,7 +88,7 @@ public final class IssueFinder {
     Report health = health(query);
     List<String> errors = Collections.synchronizedList(new ArrayList<>(health.errors()));
     List<Candidate> candidates = Collections.synchronizedList(new ArrayList<>());
-    Instant now = clock.instant();
+    Instant now = now();
 
     try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
       List<Future<?>> tasks = new ArrayList<>();
@@ -128,6 +129,10 @@ public final class IssueFinder {
     List<Candidate> ranked = new ArrayList<>(candidates);
     ranked.sort(Ranking.DEFAULT);
     return new Report(now, health.repos(), ranked, errors, github.rateLimit());
+  }
+
+  private Instant now() {
+    return clock.instant().truncatedTo(ChronoUnit.SECONDS);
   }
 
   private List<Issue> openIssues(String repo, IssueQuery query) {
