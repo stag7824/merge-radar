@@ -7,7 +7,8 @@ import java.util.Locale;
 public enum Format {
   TABLE(new TableRenderer()),
   MARKDOWN(new MarkdownRenderer()),
-  JSON(new JsonRenderer());
+  JSON(new JsonRenderer()),
+  HTML(new HtmlRenderer());
 
   private final Renderer renderer;
 

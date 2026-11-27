@@ -108,6 +108,43 @@ class FormatTest {
   }
 
   @Test
+  void htmlIsSelfContainedAndEscapesUntrustedText() {
+    Report report = report();
+    Issue hostile =
+        new Issue(
+            "a/b",
+            1,
+            "<script>alert(1)</script>",
+            "https://github.com/a/b/issues/1\"onmouseover=\"x",
+            "x",
+            AuthorAssociation.NONE,
+            NOW,
+            NOW,
+            0,
+            List.of("<b>"),
+            List.of());
+    Report withHostile =
+        new Report(
+            NOW,
+            report.repos(),
+            List.of(
+                new Candidate(hostile, report.repos().get(0), report.candidates().get(0).claim())),
+            List.of(),
+            report.rateLimit());
+
+    String html = Format.HTML.render(withHostile);
+
+    assertThat(html)
+        .startsWith("<!doctype html>")
+        .contains("&lt;script&gt;alert(1)&lt;/script&gt;")
+        .contains("&quot;onmouseover=&quot;")
+        .contains("<span class=\"score s-good\">81</span>")
+        .doesNotContain("<script")
+        .doesNotContain("<link")
+        .doesNotContain("<b>");
+  }
+
+  @Test
   void parsesFormatNames() {
     assertThat(Format.parse(" markdown ")).isEqualTo(Format.MARKDOWN);
   }
