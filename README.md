@@ -60,7 +60,15 @@ Output is also available as Markdown (`-f markdown`) or JSON (`-f json`).
 
 ## Install
 
-Requires Java 21 or newer.
+Requires Java 21 or newer. Download `merge-radar.jar` from the
+[latest release](https://github.com/stag7824/merge-radar/releases/latest) and run
+`java -jar merge-radar.jar --help`, or use the container image:
+
+```sh
+docker run --rm -e GITHUB_TOKEN ghcr.io/stag7824/merge-radar:latest health apache/cloudstack
+```
+
+To build from source:
 
 ```sh
 git clone https://github.com/stag7824/merge-radar.git
@@ -101,7 +109,7 @@ Run it on a schedule and get a digest in the job summary, or open it as an issue
     path: .merge-radar-cache.db
     key: merge-radar-${{ github.run_id }}
     restore-keys: merge-radar-
-- uses: stag7824/merge-radar@main
+- uses: stag7824/merge-radar@v0.1.0
   with:
     repos: |
       apache/cloudstack

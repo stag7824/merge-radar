@@ -22,7 +22,7 @@ jobs:
           path: .merge-radar-cache.db
           key: merge-radar-${{ github.run_id }}
           restore-keys: merge-radar-
-      - uses: stag7824/merge-radar@main
+      - uses: stag7824/merge-radar@v0.1.0
         with:
           repos: |
             apache/cloudstack
