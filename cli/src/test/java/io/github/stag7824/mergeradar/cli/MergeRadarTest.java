@@ -9,7 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import picocli.CommandLine;
 
 class MergeRadarTest {
@@ -79,5 +82,25 @@ class MergeRadarTest {
     assertThat(converter.convert("90m")).isEqualTo(Duration.ofMinutes(90));
     assertThatThrownBy(() -> converter.convert("1w"))
         .isInstanceOf(CommandLine.TypeConversionException.class);
+  }
+
+  @ParameterizedTest
+  @CsvSource({"health, 0", "health, -1", "issues, 0", "issues, -1"})
+  @Timeout(5)
+  void rejectsNonPositiveConcurrency(String command, int concurrency) {
+    Run run =
+        run(
+            command,
+            "a/b",
+            "--concurrency",
+            Integer.toString(concurrency),
+            "--no-cache",
+            "--token",
+            "x",
+            "--api-url",
+            "http://127.0.0.1:1");
+
+    assertThat(run.exitCode()).isEqualTo(2);
+    assertThat(run.err()).contains("maxConcurrentRequests must be at least 1");
   }
 }

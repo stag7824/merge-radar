@@ -91,7 +91,7 @@ final class CommonOptions {
   @Option(
       names = "--concurrency",
       defaultValue = "8",
-      description = "Requests in flight at once (default: ${DEFAULT-VALUE}).")
+      description = "Requests in flight at once, at least 1 (default: ${DEFAULT-VALUE}).")
   int concurrency;
 
   List<String> allRepos() {

@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import io.github.stag7824.mergeradar.claims.ClaimDetector;
@@ -22,6 +23,8 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class IssueFinderTest {
 
@@ -219,5 +222,37 @@ class IssueFinderTest {
   void rejectsMalformedRepositoryNames() {
     org.assertj.core.api.Assertions.assertThatIllegalArgumentException()
         .isThrownBy(() -> query(List.of("not-a-repo"), false, false));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, -1})
+  void rejectsNonPositiveConcurrency(int concurrency) {
+    Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
+    GitHubClient github = GitHubClient.builder().baseUrl(server.baseUrl()).build();
+
+    assertThatIllegalArgumentException()
+        .isThrownBy(() ->
+            new IssueFinder(
+                github,
+                new RepoHealthService(github, clock, 3),
+                new ClaimDetector(),
+                clock,
+                concurrency))
+        .withMessage("maxConcurrentRequests must be at least 1");
+  }
+
+  @Test
+  void singleConcurrentRequestCanComplete() {
+    stubHealthyRepo("x/y");
+    Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
+    GitHubClient github = GitHubClient.builder().baseUrl(server.baseUrl()).build();
+    IssueFinder single =
+        new IssueFinder(
+            github, new RepoHealthService(github, clock, 3, 0), new ClaimDetector(), clock, 1);
+
+    Report report = single.health(query(List.of("x/y"), false, false));
+
+    assertThat(report.errors()).isEmpty();
+    assertThat(report.repos()).extracting(r -> r.repo()).containsExactly("x/y");
   }
 }

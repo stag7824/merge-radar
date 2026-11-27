@@ -44,12 +44,19 @@ public final class IssueFinder {
   private final Clock clock;
   private final Semaphore inFlight;
 
+  /**
+   * @param maxConcurrentRequests maximum requests in flight; must be at least 1
+   * @throws IllegalArgumentException if {@code maxConcurrentRequests} is less than 1
+   */
   public IssueFinder(
       GitHubClient github,
       RepoHealthService healthService,
       ClaimDetector claimDetector,
       Clock clock,
       int maxConcurrentRequests) {
+    if (maxConcurrentRequests < 1) {
+      throw new IllegalArgumentException("maxConcurrentRequests must be at least 1");
+    }
     this.github = github;
     this.healthService = healthService;
     this.claimDetector = claimDetector;
