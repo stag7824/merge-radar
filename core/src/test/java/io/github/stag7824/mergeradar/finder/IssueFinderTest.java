@@ -77,7 +77,14 @@ class IssueFinderTest {
 
   private IssueQuery query(List<String> repos, boolean outsiderOnly, boolean includeClaimed) {
     return new IssueQuery(
-        repos, List.of("bug"), null, outsiderOnly, includeClaimed, 30, Duration.ofDays(30));
+        repos,
+        List.of("bug"),
+        List.of("status: team-only"),
+        null,
+        outsiderOnly,
+        includeClaimed,
+        30,
+        Duration.ofDays(30));
   }
 
   @Test
@@ -154,6 +161,26 @@ class IssueFinderTest {
     Report report = finder.find(query(List.of("x/y"), true, false));
 
     assertThat(report.candidates()).extracting(c -> c.issue().number()).containsExactly(2);
+  }
+
+  @Test
+  void excludedLabelsAreSkippedWithoutFetchingTheirTimeline() {
+    stubHealthyRepo("x/y");
+    String teamOnly =
+        issue(1, "NONE", "2026-11-20T00:00:00Z", "[]")
+            .replace(
+                "[{\"name\":\"bug\"}]", "[{\"name\":\"bug\"},{\"name\":\"status: team-only\"}]");
+    server.stubFor(
+        get(urlPathEqualTo("/repos/x/y/issues"))
+            .willReturn(
+                okJson(
+                    "[" + teamOnly + "," + issue(2, "NONE", "2026-11-19T00:00:00Z", "[]") + "]")));
+    server.stubFor(get(urlPathEqualTo("/repos/x/y/issues/2/timeline")).willReturn(okJson("[]")));
+
+    Report report = finder.find(query(List.of("x/y"), false, false));
+
+    assertThat(report.candidates()).extracting(c -> c.issue().number()).containsExactly(2);
+    server.verify(0, getRequestedFor(urlPathEqualTo("/repos/x/y/issues/1/timeline")));
   }
 
   @Test

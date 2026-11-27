@@ -158,6 +158,7 @@ public final class IssueFinder {
           // "since" on this endpoint filters by last update, so check creation too.
           .filter(issue -> query.since() == null || !issue.createdAt().isBefore(query.since()))
           .filter(issue -> !query.outsiderReportsOnly() || issue.association().isOutsider())
+          .filter(issue -> issue.labels().stream().noneMatch(query.excludeLabels()::contains))
           // An assignee already settles it; skip the timeline call.
           .filter(issue -> query.includeClaimed() || issue.assignees().isEmpty())
           .forEach(issue -> issues.putIfAbsent(issue.number(), issue));

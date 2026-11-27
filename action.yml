@@ -20,6 +20,9 @@ inputs:
   labels:
     description: Only issues with any of these labels, separated by commas or newlines.
     default: ""
+  exclude_labels:
+    description: Skip issues with any of these labels, separated by commas or newlines.
+    default: ""
   recent:
     description: Only issues opened within this long, for example 30d.
     default: ""

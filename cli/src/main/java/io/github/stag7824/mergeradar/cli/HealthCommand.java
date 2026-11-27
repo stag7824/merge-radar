@@ -24,7 +24,8 @@ final class HealthCommand implements Callable<Integer> {
   @Override
   public Integer call() throws Exception {
     IssueQuery query =
-        new IssueQuery(options.allRepos(), List.of(), null, false, false, 1, options.window);
+        new IssueQuery(
+            options.allRepos(), List.of(), List.of(), null, false, false, 1, options.window);
     ResponseCache cache = options.openCache();
     try (AutoCloseable ignored = CommonOptions.closer(cache)) {
       Report report = options.finder(cache).health(query);

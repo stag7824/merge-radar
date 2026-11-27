@@ -84,7 +84,8 @@ is logged in. It works without a token too, but then GitHub allows only 60 reque
 
 ```text
 merge-radar health OWNER/REPO... [--window 30d]
-merge-radar issues OWNER/REPO... [--label LABEL]... [--recent 30d] [--outsider-reports]
+merge-radar issues OWNER/REPO... [--label LABEL]... [--exclude-label LABEL]... [--recent 30d]
+                                 [--outsider-reports]
                                  [--include-claimed] [--per-repo 30]
 
 common: --repos-file FILE   -f table|markdown|json|html   -o FILE
@@ -94,6 +95,8 @@ common: --repos-file FILE   -f table|markdown|json|html   -o FILE
 
 - `--label` can be repeated; an issue with any of the labels matches. Without it, all open
   issues are considered.
+- `--exclude-label` skips issues the project reserves for itself. Spring Boot, for example,
+  labels many bugs `status: team-only` and declines outside pull requests for them.
 - `--outsider-reports` keeps issues opened by users rather than maintainers. These are often
   real bugs with a clear reproduction, and better first targets than labelled issues.
 - `--include-claimed` lists claimed and probably-fixed issues too, with the reason.
@@ -119,7 +122,7 @@ Run it on a schedule and get a digest in the job summary, or open it as an issue
 ```
 
 Inputs: `command`, `repos`, `repos_file`, `labels`, `recent`, `outsider_reports`, `per_repo`,
-`reply_sample`, `window`, `format`, `output`, `cache_file`, `token`. See [`action.yml`](action.yml).
+`exclude_labels`, `reply_sample`, `window`, `format`, `output`, `cache_file`, `token`. See [`action.yml`](action.yml).
 
 ## How it decides
 

@@ -38,6 +38,12 @@ final class IssuesCommand implements Callable<Integer> {
   List<String> labels = new ArrayList<>();
 
   @Option(
+      names = {"-x", "--exclude-label"},
+      paramLabel = "LABEL",
+      description = "Skip issues with this label, e.g. 'status: team-only'. Repeat for several.")
+  List<String> excludeLabels = new ArrayList<>();
+
+  @Option(
       names = "--recent",
       paramLabel = "DURATION",
       description = "Only issues opened within this long, e.g. 30d.")
@@ -65,6 +71,7 @@ final class IssuesCommand implements Callable<Integer> {
         new IssueQuery(
             options.allRepos(),
             labels,
+            excludeLabels,
             since,
             outsiderReports,
             includeClaimed,

@@ -21,6 +21,13 @@ if [[ "${args[0]}" == "issues" && -n "${INPUT_LABELS:-}" ]]; then
   done < <(printf '%s' "$INPUT_LABELS" | tr ',' '\n')
 fi
 
+if [[ "${args[0]}" == "issues" && -n "${INPUT_EXCLUDE_LABELS:-}" ]]; then
+  while IFS= read -r label; do
+    label="$(printf '%s' "$label" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+    [[ -n "$label" ]] && args+=(--exclude-label "$label")
+  done < <(printf '%s' "$INPUT_EXCLUDE_LABELS" | tr ',' '\n')
+fi
+
 if [[ "${args[0]}" == "issues" ]]; then
   [[ -n "${INPUT_RECENT:-}" ]] && args+=(--recent "$INPUT_RECENT")
   [[ "${INPUT_OUTSIDER_REPORTS:-false}" == "true" ]] && args+=(--outsider-reports)

@@ -10,6 +10,7 @@ import java.util.Objects;
  *
  * @param repos repositories as {@code owner/name}
  * @param labels issues with any of these labels; empty means all open issues
+ * @param excludeLabels skip issues with any of these labels, for example {@code status: team-only}
  * @param since only issues created at or after this instant; {@code null} for no limit
  * @param outsiderReportsOnly only issues opened by people who are not maintainers
  * @param includeClaimed also return claimed and probably-fixed issues
@@ -19,6 +20,7 @@ import java.util.Objects;
 public record IssueQuery(
     List<String> repos,
     List<String> labels,
+    List<String> excludeLabels,
     Instant since,
     boolean outsiderReportsOnly,
     boolean includeClaimed,
@@ -28,6 +30,7 @@ public record IssueQuery(
   public IssueQuery {
     repos = List.copyOf(repos);
     labels = List.copyOf(labels);
+    excludeLabels = List.copyOf(excludeLabels);
     Objects.requireNonNull(healthWindow);
     if (issuesPerRepo < 1) {
       throw new IllegalArgumentException("issuesPerRepo must be at least 1");
