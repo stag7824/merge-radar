@@ -21,19 +21,25 @@ owners, members or collaborators, and not bots) over the last 30 days:
 
 ```console
 $ merge-radar health --repos-file examples/java-repos.txt
-REPO                            SCORE  MERGED  PEOPLE  MEDIAN  ACCEPT
-hiero-ledger/hiero-sdk-java        99      13      10     22h     93%
-OpenAPITools/openapi-generator     98     129      59    2.5d     88%
-keycloak/keycloak                  97    161+      44    3.1d     84%
-apache/dolphinscheduler            97      18       9     26h     78%
-spring-projects/spring-boot        95      71      32     29h     65%
-checkstyle/checkstyle              95    179+      37     27h     67%
-apache/cloudstack                  72      42      26   56.6d     82%
-(outsider pull requests over the last 30 days; + means at least)
+REPO                            SCORE  MERGED  PEOPLE  MEDIAN  ACCEPT   REPLY  SILENT
+hiero-ledger/hiero-sdk-java        99      13      10     22h     93%     21h    1/15
+OpenAPITools/openapi-generator     98     129      59    2.5d     88%     10h    6/15
+keycloak/keycloak                  97    164+      44    3.4d     83%     12h    1/15
+apache/dolphinscheduler            97      18       9     26h     78%     14h    2/15
+spring-projects/spring-boot        95      70      31     29h     64%     10h    3/15
+checkstyle/checkstyle              95    179+      37     27h     67%     14h    0/15
+apache/cloudstack                  72      42      26   56.6d     82%      1h    1/15
+(outsider pull requests over the last 30 days; + means at least; REPLY is the median time to a first reply, SILENT the share never answered)
 ```
 
 Apache CloudStack merges plenty of outside work, but the median pull request waits almost two
 months. That matches my own experience there: worth it, but plan for a long review.
+
+`REPLY` is the median time until someone other than the author (and not a bot) first comments on
+or reviews a recent outsider pull request, and `SILENT` is how many of those never got a reply.
+openapi-generator merges a lot, but 6 of its last 15 outside pull requests are still waiting
+for anyone to answer. Replies are sampled (15 per repository by default, one API call each) and
+are not part of the score.
 
 Recent bug reports from outsiders that nobody has claimed:
 
@@ -73,8 +79,8 @@ merge-radar health OWNER/REPO... [--window 30d]
 merge-radar issues OWNER/REPO... [--label LABEL]... [--recent 30d] [--outsider-reports]
                                  [--include-claimed] [--per-repo 30]
 
-common: --repos-file FILE   -f table|markdown|json   -o FILE
-        --cache FILE | --no-cache   --max-wait 2m   --concurrency 8
+common: --repos-file FILE   -f table|markdown|json|html   -o FILE
+        --reply-sample 15   --cache FILE | --no-cache   --max-wait 2m   --concurrency 8
 ```
 
 - `--label` can be repeated; an issue with any of the labels matches. Without it, all open
@@ -104,7 +110,7 @@ Run it on a schedule and get a digest in the job summary, or open it as an issue
 ```
 
 Inputs: `command`, `repos`, `repos_file`, `labels`, `recent`, `outsider_reports`, `per_repo`,
-`window`, `format`, `output`, `cache_file`, `token`. See [`action.yml`](action.yml).
+`reply_sample`, `window`, `format`, `output`, `cache_file`, `token`. See [`action.yml`](action.yml).
 
 ## How it decides
 
@@ -175,7 +181,14 @@ Decisions worth knowing about:
   "Development" sidebar shows up in the timeline without its number, so it is not detected unless
   it also mentions the issue (most do, with "Fixes #123").
 - **Claim phrases are English only.**
-- **Not measured yet:** time to the first maintainer response on a pull request.
+- **Apache projects.** Apache committers get their rights from the ASF, not from GitHub, so
+  GitHub labels most of them `CONTRIBUTOR` too. In CloudStack that means committers' own pull
+  requests count as outsider ones, which is why its reply time looks fast: colleagues answer
+  each other within the hour. For the same reason the reply metric counts a reply from anyone
+  but the author, instead of trusting the label.
+- **Bots that look like people.** Some bots are registered as ordinary users (CloudStack's
+  `blueorangutan`, Kubernetes' `k8s-ci-robot`). merge-radar recognises login names with `bot`
+  or `robot` as a word and a short list of known ones; others may slip through.
 
 ## Why I built this
 

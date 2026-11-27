@@ -18,29 +18,34 @@ final class TableRenderer implements Format.Renderer {
       out.append(
           String.format(
               Locale.ROOT,
-              "%-" + width + "s  %5s  %6s  %6s  %6s  %6s%n",
+              "%-" + width + "s  %5s  %6s  %6s  %6s  %6s  %6s  %6s%n",
               "REPO",
               "SCORE",
               "MERGED",
               "PEOPLE",
               "MEDIAN",
-              "ACCEPT"));
+              "ACCEPT",
+              "REPLY",
+              "SILENT"));
       for (RepoHealth repo : report.repos()) {
         out.append(
             String.format(
                 Locale.ROOT,
-                "%-" + width + "s  %5d  %6s  %6d  %6s  %6s%n",
+                "%-" + width + "s  %5d  %6s  %6d  %6s  %6s  %6s  %6s%n",
                 repo.repo(),
                 repo.score(),
                 repo.outsiderMerged() + (repo.partial() ? "+" : ""),
                 repo.outsiderAuthors(),
                 Text.duration(repo.medianTimeToMerge()),
-                Text.percent(repo.acceptanceRate())));
+                Text.percent(repo.acceptanceRate()),
+                Text.duration(repo.responses().medianTimeToFirstReply()),
+                Text.silent(repo.responses())));
       }
       out.append(
           String.format(
               Locale.ROOT,
-              "(outsider pull requests over the last %d days; + means at least)%n",
+              "(outsider pull requests over the last %d days; + means at least;"
+                  + " REPLY is the median time to a first reply, SILENT the share never answered)%n",
               report.repos().get(0).window().toDays()));
     }
 

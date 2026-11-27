@@ -73,6 +73,14 @@ final class CommonOptions {
   Duration maxWait;
 
   @Option(
+      names = "--reply-sample",
+      defaultValue = "15",
+      description =
+          "Recent outsider pull requests per repository to check for a first reply; one API call"
+              + " each, 0 to skip (default: ${DEFAULT-VALUE}).")
+  int replySample;
+
+  @Option(
       names = "--concurrency",
       defaultValue = "8",
       description = "Requests in flight at once (default: ${DEFAULT-VALUE}).")
@@ -116,7 +124,11 @@ final class CommonOptions {
             .build();
     Clock clock = Clock.systemUTC();
     return new IssueFinder(
-        github, new RepoHealthService(github, clock, 3), new ClaimDetector(), clock, concurrency);
+        github,
+        new RepoHealthService(github, clock, 3, replySample),
+        new ClaimDetector(),
+        clock,
+        concurrency);
   }
 
   void write(String text, java.io.PrintWriter out) {

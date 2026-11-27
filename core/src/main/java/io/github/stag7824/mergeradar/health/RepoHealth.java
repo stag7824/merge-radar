@@ -15,6 +15,7 @@ import java.util.Optional;
  * @param score 0 to 100, see {@link HealthCalculator}
  * @param partial {@code true} when the page limit was reached before the start of the window, so
  *     the counts are a lower bound
+ * @param responses how quickly outsider pull requests get a first reply; not part of the score
  */
 public record RepoHealth(
     String repo,
@@ -24,7 +25,21 @@ public record RepoHealth(
     int outsiderClosedUnmerged,
     Optional<Duration> medianTimeToMerge,
     int score,
-    boolean partial) {
+    boolean partial,
+    ResponseStats responses) {
+
+  public RepoHealth withResponses(ResponseStats responses) {
+    return new RepoHealth(
+        repo,
+        window,
+        outsiderMerged,
+        outsiderAuthors,
+        outsiderClosedUnmerged,
+        medianTimeToMerge,
+        score,
+        partial,
+        responses);
+  }
 
   /** Share of decided outsider PRs that were merged, or empty when none were decided. */
   public Optional<Double> acceptanceRate() {

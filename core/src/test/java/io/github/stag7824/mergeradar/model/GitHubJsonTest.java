@@ -31,6 +31,24 @@ class GitHubJsonTest {
   }
 
   @Test
+  void botsRegisteredAsUsersAreStillBots() {
+    var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+    for (String login :
+        java.util.List.of("blueorangutan", "k8s-ci-robot", "acme-bot", "bot_runner")) {
+      assertThat(
+              GitHubJson.isBot(mapper.createObjectNode().put("login", login).put("type", "User")))
+          .as(login)
+          .isTrue();
+    }
+    for (String login : java.util.List.of("DaanHoogland", "abbott", "robotics-fan", "stag7824")) {
+      assertThat(
+              GitHubJson.isBot(mapper.createObjectNode().put("login", login).put("type", "User")))
+          .as(login)
+          .isFalse();
+    }
+  }
+
+  @Test
   void unknownAssociationCountsAsNone() {
     assertThat(AuthorAssociation.parse("SOMETHING_NEW")).isEqualTo(AuthorAssociation.NONE);
     assertThat(AuthorAssociation.parse(null)).isEqualTo(AuthorAssociation.NONE);

@@ -40,6 +40,14 @@ final class JsonRenderer implements Format.Renderer {
           .ifPresentOrElse(
               rate -> node.put("acceptanceRate", rate), () -> node.putNull("acceptanceRate"));
       node.put("partial", repo.partial());
+      ObjectNode responses = node.putObject("responses");
+      responses.put("sampled", repo.responses().sampled());
+      responses.put("unanswered", repo.responses().unanswered());
+      repo.responses()
+          .medianTimeToFirstReply()
+          .ifPresentOrElse(
+              median -> responses.put("medianHoursToFirstReply", median.toMinutes() / 60.0),
+              () -> responses.putNull("medianHoursToFirstReply"));
     }
 
     ArrayNode issues = root.putArray("issues");

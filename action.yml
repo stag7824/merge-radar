@@ -29,6 +29,9 @@ inputs:
   per_repo:
     description: How many of the newest matching issues to check per repository.
     default: "30"
+  reply_sample:
+    description: Recent outsider pull requests per repository to check for a first reply (0 to skip).
+    default: "15"
   window:
     description: How far back to measure repository health.
     default: 30d

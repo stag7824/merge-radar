@@ -18,7 +18,8 @@ final class MarkdownRenderer implements Format.Renderer {
     if (!report.repos().isEmpty()) {
       out.append("## Repositories\n\n")
           .append("| Repository | Score | Outsider PRs merged | People | Median time to merge | ")
-          .append("Acceptance |\n|---|--:|--:|--:|--:|--:|\n");
+          .append("Acceptance | Median first reply | Never answered |\n")
+          .append("|---|--:|--:|--:|--:|--:|--:|--:|\n");
       for (RepoHealth repo : report.repos()) {
         out.append("| [")
             .append(repo.repo())
@@ -35,6 +36,10 @@ final class MarkdownRenderer implements Format.Renderer {
             .append(Text.duration(repo.medianTimeToMerge()))
             .append(" | ")
             .append(Text.percent(repo.acceptanceRate()))
+            .append(" | ")
+            .append(Text.duration(repo.responses().medianTimeToFirstReply()))
+            .append(" | ")
+            .append(Text.silent(repo.responses()))
             .append(" |\n");
       }
       out.append("\nCounts cover pull requests from outsiders over the last ")

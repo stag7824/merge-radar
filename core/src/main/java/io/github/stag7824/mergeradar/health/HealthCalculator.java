@@ -73,7 +73,15 @@ public final class HealthCalculator {
                     + speed(median)
                     + acceptance(merged.size(), closedUnmerged));
     return new RepoHealth(
-        repo, window, merged.size(), authors.size(), (int) closedUnmerged, median, score, partial);
+        repo,
+        window,
+        merged.size(),
+        authors.size(),
+        (int) closedUnmerged,
+        median,
+        score,
+        partial,
+        ResponseStats.NOT_MEASURED);
   }
 
   static double activity(int outsiderMerged) {

@@ -39,6 +39,16 @@ public sealed interface TimelineEvent {
       Instant createdAt, String author, boolean bot, AuthorAssociation association, String body)
       implements TimelineEvent {}
 
+  /**
+   * A pull request review.
+   *
+   * @param state {@code approved}, {@code changes_requested}, {@code commented} or {@code
+   *     dismissed}
+   */
+  record Review(
+      Instant createdAt, String author, boolean bot, AuthorAssociation association, String state)
+      implements TimelineEvent {}
+
   /** Someone was assigned to or unassigned from the issue. */
   record Assignment(Instant createdAt, String assignee, boolean assigned)
       implements TimelineEvent {}

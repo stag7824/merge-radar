@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /** Converts GitHub REST JSON into merge-radar's records. */
 public final class GitHubJson {
@@ -66,6 +69,14 @@ public final class GitHubJson {
               isBot(json.path("user")),
               AuthorAssociation.parse(text(json, "author_association")),
               json.path("body").asText(""));
+      case "reviewed" ->
+          new TimelineEvent.Review(
+              // Reviews carry submitted_at instead of created_at.
+              at != null ? at : instant(json, "submitted_at"),
+              json.path("user").path("login").asText(""),
+              isBot(json.path("user")),
+              AuthorAssociation.parse(text(json, "author_association")),
+              json.path("state").asText(""));
       case "assigned", "unassigned" ->
           new TimelineEvent.Assignment(
               at, json.path("assignee").path("login").asText(""), event.equals("assigned"));
@@ -79,9 +90,31 @@ public final class GitHubJson {
     return names;
   }
 
+  /**
+   * Bots registered as ordinary users, which GitHub cannot flag. They answer commands within a
+   * minute, so counting them would make every pull request look instantly answered.
+   */
+  static final Set<String> KNOWN_USER_BOTS =
+      Set.of(
+          "blueorangutan",
+          "k8s-ci-robot",
+          "openshift-ci-robot",
+          "openshift-ci",
+          "mergify",
+          "codecov-commenter",
+          "sonarqubecloud",
+          "allcontributors",
+          "boring-cyborg");
+
+  /** Login names like {@code ci-bot}, {@code bot-x} or {@code acme-robot}. */
+  private static final Pattern BOT_LOGIN = Pattern.compile("(?i)(^|[-_])(bot|robot)([-_]|$)");
+
   static boolean isBot(JsonNode user) {
+    String login = user.path("login").asText("");
     return "Bot".equals(user.path("type").asText())
-        || user.path("login").asText().endsWith("[bot]");
+        || login.endsWith("[bot]")
+        || KNOWN_USER_BOTS.contains(login.toLowerCase(Locale.ROOT))
+        || BOT_LOGIN.matcher(login).find();
   }
 
   static String text(JsonNode json, String field) {

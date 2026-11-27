@@ -58,6 +58,56 @@ class RepoHealthServiceTest {
   }
 
   @Test
+  void samplesOutsiderPullRequestsForFirstReply() {
+    String merged =
+        """
+        {"number":5,"user":{"login":"out","type":"User"},"author_association":"NONE",
+         "created_at":"2026-11-10T00:00:00Z","updated_at":"2026-11-12T00:00:00Z",
+         "closed_at":"2026-11-12T00:00:00Z","merged_at":"2026-11-12T00:00:00Z"}\
+        """;
+    String staleOpen =
+        """
+        {"number":6,"user":{"login":"out2","type":"User"},"author_association":"NONE",
+         "created_at":"2026-11-05T00:00:00Z","updated_at":"2026-11-05T00:00:00Z",
+         "closed_at":null,"merged_at":null}\
+        """;
+    String freshOpen =
+        """
+        {"number":7,"user":{"login":"out3","type":"User"},"author_association":"NONE",
+         "created_at":"2026-11-19T00:00:00Z","updated_at":"2026-11-19T00:00:00Z",
+         "closed_at":null,"merged_at":null}\
+        """;
+    server.stubFor(
+        get(urlPathEqualTo("/repos/a/b/pulls"))
+            .withQueryParam("state", equalTo("closed"))
+            .willReturn(okJson("[" + merged + "]")));
+    server.stubFor(
+        get(urlPathEqualTo("/repos/a/b/pulls"))
+            .withQueryParam("state", equalTo("open"))
+            .willReturn(okJson("[" + staleOpen + "," + freshOpen + "]")));
+    server.stubFor(
+        get(urlPathEqualTo("/repos/a/b/issues/5/timeline"))
+            .willReturn(
+                okJson(
+                    "[{\"event\":\"commented\",\"created_at\":\"2026-11-10T12:00:00Z\","
+                        + "\"user\":{\"login\":\"m\",\"type\":\"User\"},"
+                        + "\"author_association\":\"MEMBER\",\"body\":\"thanks\"}]")));
+    server.stubFor(get(urlPathEqualTo("/repos/a/b/issues/6/timeline")).willReturn(okJson("[]")));
+    GitHubClient client = GitHubClient.builder().baseUrl(server.baseUrl()).build();
+    RepoHealthService service =
+        new RepoHealthService(
+            client, Clock.fixed(Instant.parse("2026-11-20T00:00:00Z"), ZoneOffset.UTC), 1, 10);
+
+    RepoHealth health = service.health("a/b", Duration.ofDays(30));
+
+    // #7 is open but younger than the grace period, so it is not sampled.
+    assertThat(health.responses().sampled()).isEqualTo(2);
+    assertThat(health.responses().unanswered()).isEqualTo(1);
+    assertThat(health.responses().medianTimeToFirstReply()).contains(Duration.ofHours(12));
+    server.verify(0, getRequestedFor(urlPathEqualTo("/repos/a/b/issues/7/timeline")));
+  }
+
+  @Test
   void flagsPartialWhenThePageLimitEndsInsideTheWindow() {
     StringBuilder page = new StringBuilder("[");
     for (int i = 0; i < 100; i++) {

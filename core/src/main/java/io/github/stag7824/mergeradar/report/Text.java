@@ -1,5 +1,6 @@
 package io.github.stag7824.mergeradar.report;
 
+import io.github.stag7824.mergeradar.health.ResponseStats;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
@@ -29,6 +30,11 @@ final class Text {
 
   static String percent(Optional<Double> share) {
     return share.map(value -> Math.round(value * 100) + "%").orElse("-");
+  }
+
+  /** "2/15" for two unanswered out of fifteen sampled, or "-" when not measured. */
+  static String silent(ResponseStats responses) {
+    return responses.measured() ? responses.unanswered() + "/" + responses.sampled() : "-";
   }
 
   static String truncate(String text, int max) {

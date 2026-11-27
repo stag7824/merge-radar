@@ -10,6 +10,7 @@ import io.github.stag7824.mergeradar.finder.Candidate;
 import io.github.stag7824.mergeradar.finder.Report;
 import io.github.stag7824.mergeradar.github.RateLimit;
 import io.github.stag7824.mergeradar.health.RepoHealth;
+import io.github.stag7824.mergeradar.health.ResponseStats;
 import io.github.stag7824.mergeradar.model.AuthorAssociation;
 import io.github.stag7824.mergeradar.model.Issue;
 import io.github.stag7824.mergeradar.model.TimelineEvent.Comment;
@@ -33,7 +34,8 @@ class FormatTest {
             3,
             Optional.of(Duration.ofHours(100)),
             81,
-            true);
+            true,
+            new ResponseStats(15, 2, Optional.of(Duration.ofHours(18))));
     Issue issue =
         new Issue(
             "apache/cloudstack",
@@ -69,7 +71,7 @@ class FormatTest {
     String table = Format.TABLE.render(report());
 
     assertThat(table)
-        .contains("apache/cloudstack     81     12+       8    4.2d     80%")
+        .contains("apache/cloudstack     81     12+       8    4.2d     80%     18h    2/15")
         .contains("[ 81] apache/cloudstack#14715  12d  Template | URL too long for column")
         .contains("note: 1 earlier pull request(s) closed without merging")
         .contains("maintainer @lead: Confirmed, @someone can fix")
@@ -81,7 +83,9 @@ class FormatTest {
     String markdown = Format.MARKDOWN.render(report());
 
     assertThat(markdown)
-        .contains("| [apache/cloudstack](https://github.com/apache/cloudstack) | 81 | 12+ | 8 |")
+        .contains(
+            "| [apache/cloudstack](https://github.com/apache/cloudstack) | 81 | 12+ | 8 | 4.2d | 80% |"
+                + " 18h | 2/15 |")
         .contains("Template \\| URL too long")
         .contains("@​someone")
         .doesNotContain("@someone");
@@ -94,6 +98,8 @@ class FormatTest {
     assertThat(json.at("/repos/0/score").asInt()).isEqualTo(81);
     assertThat(json.at("/repos/0/medianHoursToMerge").asDouble()).isEqualTo(100.0);
     assertThat(json.at("/repos/0/partial").asBoolean()).isTrue();
+    assertThat(json.at("/repos/0/responses/unanswered").asInt()).isEqualTo(2);
+    assertThat(json.at("/repos/0/responses/medianHoursToFirstReply").asDouble()).isEqualTo(18.0);
     assertThat(json.at("/issues/0/status").asText()).isEqualTo("UNCLAIMED");
     assertThat(json.at("/issues/0/labels/0").asText()).isEqualTo("type:bug");
     assertThat(json.at("/issues/0/lastMaintainerComment/author").asText()).isEqualTo("lead");

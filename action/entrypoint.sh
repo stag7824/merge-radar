@@ -27,6 +27,7 @@ if [[ "${args[0]}" == "issues" ]]; then
   [[ -n "${INPUT_PER_REPO:-}" ]] && args+=(--per-repo "$INPUT_PER_REPO")
 fi
 [[ -n "${INPUT_WINDOW:-}" ]] && args+=(--window "$INPUT_WINDOW")
+[[ -n "${INPUT_REPLY_SAMPLE:-}" ]] && args+=(--reply-sample "$INPUT_REPLY_SAMPLE")
 
 output="${INPUT_OUTPUT:-merge-radar.md}"
 args+=(--format "${INPUT_FORMAT:-markdown}" --output "$output")
