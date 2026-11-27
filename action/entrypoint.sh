@@ -32,6 +32,7 @@ if [[ "${args[0]}" == "issues" ]]; then
   [[ -n "${INPUT_RECENT:-}" ]] && args+=(--recent "$INPUT_RECENT")
   [[ "${INPUT_OUTSIDER_REPORTS:-false}" == "true" ]] && args+=(--outsider-reports)
   [[ -n "${INPUT_PER_REPO:-}" ]] && args+=(--per-repo "$INPUT_PER_REPO")
+  [[ -n "${INPUT_MIN_SCORE:-}" ]] && args+=(--min-score "$INPUT_MIN_SCORE")
 fi
 [[ -n "${INPUT_WINDOW:-}" ]] && args+=(--window "$INPUT_WINDOW")
 [[ -n "${INPUT_REPLY_SAMPLE:-}" ]] && args+=(--reply-sample "$INPUT_REPLY_SAMPLE")

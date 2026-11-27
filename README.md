@@ -87,6 +87,7 @@ merge-radar health OWNER/REPO... [--window 30d]
 merge-radar issues OWNER/REPO... [--label LABEL]... [--exclude-label LABEL]... [--recent 30d]
                                  [--outsider-reports]
                                  [--include-claimed] [--per-repo 30]
+                                 [--min-score 0]
 
 common: --repos-file FILE   -f table|markdown|json|html   -o FILE
         --reply-sample 15   --cache FILE | --no-cache   --max-wait 2m   --concurrency 8
@@ -95,6 +96,9 @@ common: --repos-file FILE   -f table|markdown|json|html   -o FILE
 
 - `--label` can be repeated; an issue with any of the labels matches. Without it, all open
   issues are considered.
+- `--min-score 60` only returns issues from repositories scoring at least 60. Values range
+  from 0 to 100; the default of 0 keeps all scores. The repository health report still includes
+  every repository. In the GitHub Action, set the `min_score` input.
 - `--exclude-label` skips issues the project reserves for itself. Spring Boot, for example,
   labels many bugs `status: team-only` and declines outside pull requests for them.
 - `--outsider-reports` keeps issues opened by users rather than maintainers. These are often

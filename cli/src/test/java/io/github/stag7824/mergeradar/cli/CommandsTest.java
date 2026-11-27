@@ -24,6 +24,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import picocli.CommandLine;
 
 /** Runs the real commands end to end against a fake GitHub API. */
@@ -194,5 +197,41 @@ class CommandsTest {
 
     assertThat(run.exitCode()).isZero();
     server.verify(0, getRequestedFor(urlPathEqualTo("/repos/acme/widget/issues/10/timeline")));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"0, 1", "48, 1", "49, 0", "100, 0"})
+  void minimumScoreFiltersIssuesAndRetainsRepositoryReport(int minScore, int expectedIssues)
+      throws Exception {
+    stubRepo();
+
+    Run run =
+        run(
+            "issues",
+            "acme/widget",
+            "--no-cache",
+            "--min-score",
+            Integer.toString(minScore),
+            "-f",
+            "json");
+
+    assertThat(run.exitCode()).as(run.err()).isZero();
+    JsonNode json = new ObjectMapper().readTree(run.out());
+    assertThat(json.at("/issues").size()).isEqualTo(expectedIssues);
+    assertThat(json.at("/repos").size()).isEqualTo(1);
+    assertThat(json.at("/repos/0/score").asInt()).isEqualTo(48);
+    if (expectedIssues == 0) {
+      server.verify(0, getRequestedFor(urlPathEqualTo("/repos/acme/widget/issues")));
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {-1, 101})
+  void invalidMinimumScoreFailsBeforeCallingGitHub(int minScore) {
+    Run run = run("issues", "acme/widget", "--no-cache", "--min-score", Integer.toString(minScore));
+
+    assertThat(run.exitCode()).isEqualTo(2);
+    assertThat(run.err()).contains("minScore must be between 0 and 100");
+    server.verify(0, getRequestedFor(urlPathEqualTo("/repos/acme/widget/pulls")));
   }
 }
