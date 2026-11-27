@@ -57,6 +57,14 @@ final class CommonOptions {
   String token;
 
   @Option(
+      names = "--api-url",
+      defaultValue = "https://api.github.com",
+      description =
+          "GitHub API base URL; for GitHub Enterprise Server use https://HOST/api/v3"
+              + " (default: ${DEFAULT-VALUE}).")
+  String apiUrl;
+
+  @Option(
       names = "--cache",
       paramLabel = "FILE",
       description = "Response cache (default: ~/.cache/merge-radar/cache.db).")
@@ -118,6 +126,7 @@ final class CommonOptions {
   IssueFinder finder(ResponseCache responseCache) {
     GitHubClient github =
         GitHubClient.builder()
+            .baseUrl(apiUrl)
             .token(resolveToken())
             .cache(responseCache)
             .maxRateLimitWait(maxWait)

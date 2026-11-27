@@ -81,6 +81,7 @@ merge-radar issues OWNER/REPO... [--label LABEL]... [--recent 30d] [--outsider-r
 
 common: --repos-file FILE   -f table|markdown|json|html   -o FILE
         --reply-sample 15   --cache FILE | --no-cache   --max-wait 2m   --concurrency 8
+        --api-url URL   (GitHub Enterprise Server: https://HOST/api/v3)
 ```
 
 - `--label` can be repeated; an issue with any of the labels matches. Without it, all open

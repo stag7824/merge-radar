@@ -22,6 +22,11 @@
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

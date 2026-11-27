@@ -36,15 +36,13 @@
         <artifactId>merge-radar-core</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <!-- One version for every Jackson module, including the ones WireMock brings in. -->
       <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
         <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.datatype</groupId>
-        <artifactId>jackson-datatype-jsr310</artifactId>
-        <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.xerial</groupId>
