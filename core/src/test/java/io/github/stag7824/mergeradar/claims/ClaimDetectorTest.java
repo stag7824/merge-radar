@@ -197,7 +197,9 @@ class ClaimDetectorTest {
         "Please assign this to me",
         "assign me",
         "/assign",
-        "Hey, I'm going to pick this up"
+        "Hey, I'm going to pick this up",
+        "Could you please approve? I will raise the PR as soon as it is approved.",
+        "I can send a PR for this"
       })
   void recognisesClaims(String body) {
     assertThat(ClaimDetector.isClaim(comment("x", NONE, 1, body))).isTrue();
@@ -210,7 +212,8 @@ class ClaimDetectorTest {
         "Is anyone working on this?",
         "Who can I assign this to?",
         "This also happens with VMware",
-        "> Can I work on this?\nThe person above never opened a PR."
+        "> Can I work on this?\nThe person above never opened a PR.",
+        "Someone should raise the PR upstream"
       })
   void ignoresNonClaims(String body) {
     assertThat(ClaimDetector.isClaim(comment("x", NONE, 1, body))).isFalse();

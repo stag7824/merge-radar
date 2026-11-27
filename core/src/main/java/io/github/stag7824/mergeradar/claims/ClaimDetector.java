@@ -44,7 +44,7 @@ public final class ClaimDetector {
                   + "handle|contribute)",
               "\\b(can|could|may) i (work on|take|pick up|fix|tackle|handle|try|have a go)",
               "\\bi(?:'ll| will| can| am going to|'m going to) (work on|take|fix|pick (this |it )?up|"
-                  + "tackle|handle|submit a (pr|fix|pull request)|open a (pr|pull request))",
+                  + "tackle|handle|(submit|open|raise|send|create) (a|the|my) (pr|fix|pull request))",
               "\\bi(?:'m| am) (working on|looking into|on) (this|it)\\b",
               "\\b(please |kindly |could you |can you )?assign (this|it)( issue)? to me\\b",
               "\\bassign me\\b",
