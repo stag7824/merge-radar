@@ -22,6 +22,9 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class IssueFinderTest {
 
@@ -219,5 +222,64 @@ class IssueFinderTest {
   void rejectsMalformedRepositoryNames() {
     org.assertj.core.api.Assertions.assertThatIllegalArgumentException()
         .isThrownBy(() -> query(List.of("not-a-repo"), false, false));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"0, 2", "1, 1", "56, 1", "57, 0", "100, 0"})
+  void minimumScoreFiltersIssuesButKeepsAllRepositoryHealth(int minScore, int expectedIssues) {
+    stubHealthyRepo("good/repo");
+    server.stubFor(get(urlPathEqualTo("/repos/quiet/repo/pulls")).willReturn(okJson("[]")));
+    for (String repo : List.of("good/repo", "quiet/repo")) {
+      server.stubFor(
+          get(urlPathEqualTo("/repos/" + repo + "/issues"))
+              .willReturn(okJson("[" + issue(1, "NONE", "2026-11-20T00:00:00Z", "[]") + "]")));
+      server.stubFor(
+          get(urlPathEqualTo("/repos/" + repo + "/issues/1/timeline")).willReturn(okJson("[]")));
+    }
+    IssueQuery query =
+        new IssueQuery(
+            List.of("good/repo", "quiet/repo"),
+            List.of(),
+            List.of(),
+            null,
+            false,
+            false,
+            30,
+            Duration.ofDays(30),
+            minScore);
+
+    Report report = finder.find(query);
+
+    assertThat(report.errors()).isEmpty();
+    assertThat(report.repos()).extracting(r -> r.score()).containsExactly(56, 0);
+    assertThat(report.candidates())
+        .hasSize(expectedIssues)
+        .allSatisfy(
+            candidate -> assertThat(candidate.health().score()).isGreaterThanOrEqualTo(minScore));
+    for (var repo : report.repos()) {
+      if (repo.score() < minScore) {
+        server.verify(0, getRequestedFor(urlPathEqualTo("/repos/" + repo.repo() + "/issues")));
+        server.verify(
+            0, getRequestedFor(urlPathEqualTo("/repos/" + repo.repo() + "/issues/1/timeline")));
+      }
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {-1, 101})
+  void rejectsMinimumScoresOutsideHealthRange(int minScore) {
+    org.assertj.core.api.Assertions.assertThatIllegalArgumentException()
+        .isThrownBy(() ->
+            new IssueQuery(
+                List.of("x/y"),
+                List.of(),
+                List.of(),
+                null,
+                false,
+                false,
+                30,
+                Duration.ofDays(30),
+                minScore))
+        .withMessage("minScore must be between 0 and 100");
   }
 }

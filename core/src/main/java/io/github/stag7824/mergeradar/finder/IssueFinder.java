@@ -93,6 +93,9 @@ public final class IssueFinder {
     try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
       List<Future<?>> tasks = new ArrayList<>();
       for (RepoHealth repo : health.repos()) {
+        if (repo.score() < query.minScore()) {
+          continue;
+        }
         List<Issue> issues;
         try {
           issues = limited(() -> openIssues(repo.repo(), query));

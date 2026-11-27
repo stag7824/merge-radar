@@ -64,6 +64,13 @@ final class IssuesCommand implements Callable<Integer> {
           "How many of the newest matching issues to check per repository (default: ${DEFAULT-VALUE}).")
   int perRepo;
 
+  @Option(
+      names = "--min-score",
+      defaultValue = "0",
+      description =
+          "Minimum repository health score for issues, 0 to 100 (default: ${DEFAULT-VALUE}).")
+  int minScore;
+
   @Override
   public Integer call() throws Exception {
     Instant since = recent == null ? null : Instant.now().minus(recent);
@@ -76,7 +83,8 @@ final class IssuesCommand implements Callable<Integer> {
             outsiderReports,
             includeClaimed,
             perRepo,
-            options.window);
+            options.window,
+            minScore);
     ResponseCache cache = options.openCache();
     try (AutoCloseable ignored = CommonOptions.closer(cache)) {
       Report report = options.finder(cache).find(query);

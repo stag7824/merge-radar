@@ -16,6 +16,7 @@ import java.util.Objects;
  * @param includeClaimed also return claimed and probably-fixed issues
  * @param issuesPerRepo how many of the newest matching issues to check per repository
  * @param healthWindow the window for {@link io.github.stag7824.mergeradar.health.RepoHealth}
+ * @param minScore minimum repository health score for issue candidates, from 0 to 100 inclusive
  */
 public record IssueQuery(
     List<String> repos,
@@ -25,13 +26,39 @@ public record IssueQuery(
     boolean outsiderReportsOnly,
     boolean includeClaimed,
     int issuesPerRepo,
-    Duration healthWindow) {
+    Duration healthWindow,
+    int minScore) {
+
+  /** Creates a query without a minimum score filter. */
+  public IssueQuery(
+      List<String> repos,
+      List<String> labels,
+      List<String> excludeLabels,
+      Instant since,
+      boolean outsiderReportsOnly,
+      boolean includeClaimed,
+      int issuesPerRepo,
+      Duration healthWindow) {
+    this(
+        repos,
+        labels,
+        excludeLabels,
+        since,
+        outsiderReportsOnly,
+        includeClaimed,
+        issuesPerRepo,
+        healthWindow,
+        0);
+  }
 
   public IssueQuery {
     repos = List.copyOf(repos);
     labels = List.copyOf(labels);
     excludeLabels = List.copyOf(excludeLabels);
     Objects.requireNonNull(healthWindow);
+    if (minScore < 0 || minScore > 100) {
+      throw new IllegalArgumentException("minScore must be between 0 and 100");
+    }
     if (issuesPerRepo < 1) {
       throw new IllegalArgumentException("issuesPerRepo must be at least 1");
     }
