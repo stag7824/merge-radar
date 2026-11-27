@@ -84,6 +84,8 @@ is logged in. It works without a token too, but then GitHub allows only 60 reque
 
 ```text
 merge-radar health OWNER/REPO... [--window 30d]
+merge-radar cache info [--cache FILE]
+merge-radar cache clear [--cache FILE]
 merge-radar issues OWNER/REPO... [--label LABEL]... [--exclude-label LABEL]... [--recent 30d]
                                  [--outsider-reports]
                                  [--include-claimed] [--per-repo 30]
@@ -95,6 +97,10 @@ common: --repos-file FILE   -f table|markdown|json|html   -o FILE
 
 - `--label` can be repeated; an issue with any of the labels matches. Without it, all open
   issues are considered.
+- `cache info` shows the absolute cache path, entry count and database file size in bytes.
+  `cache clear` deletes every cached response; SQLite may retain the allocated file space.
+  Both use `~/.cache/merge-radar/cache.db` by default, accept `--cache FILE`, and work
+  without GitHub credentials. A missing cache is treated as empty and is not created.
 - `--exclude-label` skips issues the project reserves for itself. Spring Boot, for example,
   labels many bugs `status: team-only` and declines outside pull requests for them.
 - `--outsider-reports` keeps issues opened by users rather than maintainers. These are often

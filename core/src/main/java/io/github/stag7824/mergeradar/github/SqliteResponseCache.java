@@ -76,6 +76,26 @@ public final class SqliteResponseCache implements ResponseCache, AutoCloseable {
     }
   }
 
+  /** Returns the number of cached responses. */
+  public synchronized long count() {
+    try (Statement query = connection.createStatement();
+        ResultSet row = query.executeQuery("SELECT COUNT(*) FROM responses")) {
+      row.next();
+      return row.getLong(1);
+    } catch (SQLException e) {
+      throw new IllegalStateException("Cannot count cache entries", e);
+    }
+  }
+
+  /** Deletes all cached responses. The database remains available for subsequent requests. */
+  public synchronized void clear() {
+    try (Statement statement = connection.createStatement()) {
+      statement.executeUpdate("DELETE FROM responses");
+    } catch (SQLException e) {
+      throw new IllegalStateException("Cannot clear cache", e);
+    }
+  }
+
   @Override
   public synchronized void close() {
     try {

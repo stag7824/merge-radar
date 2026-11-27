@@ -9,7 +9,7 @@ import picocli.CommandLine.Command;
     mixinStandardHelpOptions = true,
     versionProvider = MergeRadar.Version.class,
     description = "Find open source issues you can actually fix and get merged.",
-    subcommands = {HealthCommand.class, IssuesCommand.class})
+    subcommands = {HealthCommand.class, IssuesCommand.class, CacheCommand.class})
 public final class MergeRadar implements Runnable {
 
   @CommandLine.Spec CommandLine.Model.CommandSpec spec;
