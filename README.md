@@ -215,6 +215,17 @@ To find issues worth fixing, I used a few rough Python scripts that screened rep
 issues. merge-radar is the tested, reusable version of that method. I wrote up the method itself
 in [How to Tell If a Project Will Merge Your PR](https://blogs.gardazi.com/how-to-tell-if-a-project-will-merge-your-pr/).
 
+## Contributing
+
+Issues labelled [good first issue](https://github.com/stag7824/merge-radar/labels/good%20first%20issue)
+are a good place to start. Run `mvn verify` before opening a pull request; it runs the tests and
+checks formatting (`mvn spotless:apply` fixes it).
+
+Thanks to everyone who has contributed:
+
+- [@Mr-KnightCLI](https://github.com/Mr-KnightCLI): `cache info` / `cache clear`, and a fix for a
+  hang with `--concurrency 0`
+
 ## License
 
 [Apache License 2.0](LICENSE)
